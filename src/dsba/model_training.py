@@ -12,6 +12,7 @@ from datetime import datetime
 from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
 
 from dsba.model_registry import ClassifierMetadata
 from .preprocessing import split_features_and_target, preprocess_dataframe
@@ -71,34 +72,35 @@ def train_logistic_regression(
     )
     return best_model, metadata
 
-
-"""
-def train_logistic_regression(
-        df: pd.DataFrame, target_column: str, model_id: str
+def train_random_forest(
+    df: pd.DataFrame, target_column: str, model_id: str
 ) -> tuple[ClassifierMixin, ClassifierMetadata]:
-    logging.info("Start training a logistic regression")
+    logging.info("Start training a random forest classifier")
     df = preprocess_dataframe(df)
     X, y = split_features_and_target(df, target_column)
 
     param_grid = {
-        "C": [0.01, 0.1, 1, 10],  
-        "max_iter": [1000]  
+        "n_estimators": [100, 200],
+        "max_depth": [None, 10, 20],
+        "min_samples_split": [2, 5],
     }
 
-    model = LogisticRegression(random_state=42, max_iter=1000)
-    model.fit(X, y)
-    
+    model = RandomForestClassifier(random_state=42)
+    grid_search = GridSearchCV(model, param_grid, cv=5, scoring="f1", n_jobs=-1)
+    grid_search.fit(X, y)
 
-    logging.info("Done training a simple classifier")
+    best_model = grid_search.best_estimator_
+    best_params = grid_search.best_params_
+
+    logging.info(f"Best hyperparameters found for Random Forest: {best_params}")
 
     metadata = ClassifierMetadata(
         id=model_id,
         created_at=str(datetime.now()),
-        algorithm="logistic regression",
+        algorithm="random forest",
         target_column=target_column,
-        hyperparameters={"random_state": 42},
-        description="Logistic Regression using GridSearchCV",
+        hyperparameters=best_params,
+        description="Random Forest Classifier using GridSearchCV",
         performance_metrics={},
     )
-    return model, metadata
-"""
+    return best_model, metadata
