@@ -20,9 +20,7 @@ class DataPreprocessor:
         - Categorical variables: List of categorical variables to encode (Default: 'Region', 'Carrier', 'Weekday', 'Social_Network', 'Restaurant_Type')
         - Numerical variables: List of numerical columns to scale (Default: 'Time_On_Previous_Website',	'Number_of_Previous_Orders', 'Daytime')
         - target_col: Target column name (default: "Clicks_Conversion")
-        - test_size: Train-test split ratio (default: 0.2)
-        - smote_threshold: Apply SMOTE if minority class is below this fraction (default: 0.3)
-        - scaler_path (str, default="scaler.pkl"): Path to save the trained scaler.
+        
         """
 
         self.categorical_vars = categorical_vars
@@ -46,13 +44,8 @@ class DataPreprocessor:
 
 
     def feature_engineering(self, df):
-        """Adds polynomial, interaction, and ratio features."""
-        
-        # Polynomial features - captures non-linear relationships
-        df['Daytime_^2'] = df['Daytime'] ** 2
-        df['PreviousOrders_^2'] = df['Number_of_Previous_Orders'] ** 2
 
-        # Interaction terms - combined effect between two variables
+        # Interaction terms - combined effect of variables
         df['DaytimeXOrders'] = df['Daytime'] * df['Number_of_Previous_Orders']
 
         # Recency Transformation (Inverse Time)
@@ -61,39 +54,8 @@ class DataPreprocessor:
         # Weekend Indicator (Binary)
         df['Is_Weekend'] = ((df['Weekday_Saturday'] == 1) | (df['Weekday_Sunday'] == 1)).astype(int)
 
-        # Ratio Features (Relative Importance)
-        df['Orders_Per_Daytime'] = df['Number_of_Previous_Orders'] / (df['Daytime'] + 1)
         return df
-    
 
-    def apply_smote(self, X, y):
-        """Applies SMOTE if there is class imbalance."""
-
-        class_counts = y.value_counts(normalize=True)
-
-        if class_counts.min() < self.smote_threshold: # Check if minority class is below threshold
-            smote = SMOTE(sampling_strategy=self.smote_threshold, random_state=42)
-            X_resampled, y_resampled = smote.fit_resample(X, y)
-            return X_resampled, y_resampled
-        
-        return X, y  # Return original data if no imbalance
-
-
-    def split_and_scale(self, df):
-        """Splits data into train-test sets and scales numerical features."""
-        X = df.drop(columns=[self.target_col])
-        y = df[self.target_col]
-
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=42, stratify=y)
-        
-        # Apply SMOTE on the training data (if needed)
-        X_train, y_train = self.apply_smote(X_train, y_train)
-
-        # Scale numerical features
-        X_train[self.numerical_vars] = self.scaler.fit_transform(X_train[self.numerical_vars])
-        X_test[self.numerical_vars] = self.scaler.transform(X_test[self.numerical_vars])
-
-        return X_train, X_test, y_train, y_test
 
     def preprocess(self, df):
         """Runs all preprocessing steps sequentially"""
@@ -102,18 +64,12 @@ class DataPreprocessor:
         - Handles missing values.
         - One-hot encodes categorical variables.
         - Generates new feature interactions.
-        - Splits data into training and test sets.
-        - Applies SMOTE for class balancing if necessary.
-        - Scales numerical features.
 
         Parameters:
         - df (pd.DataFrame): Raw input dataset.
 
         Returns:
-        - X_train (pd.DataFrame): Processed training feature set.
-        - X_test (pd.DataFrame): Processed test feature set.
-        - y_train (pd.Series): Training target labels.
-        - y_test (pd.Series): Test target labels.
+        - df (pd.DataFrame): Processed dataframe
         """
         
         # 1. Handle missing values
@@ -124,4 +80,4 @@ class DataPreprocessor:
         df = self.feature_engineering(df)
         
         # 4. Return train and test processed data
-        return self.split_and_scale(df)
+        return df
