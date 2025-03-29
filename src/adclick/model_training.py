@@ -13,7 +13,7 @@ from lightgbm import LGBMClassifier
 
 import optuna
 
-from model_registry import save_model
+from .model_registry import save_model
 
 
 class ModelTrainer:
