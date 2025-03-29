@@ -27,6 +27,20 @@ python -m src.adclick.main --data path/to/data.csv --task evaluate --model logis
 python -m src.adclick.main --task predict --model logistic_regression --predict_data path/to/new_data.csv
 ```
 
+## Options
+
+### --task
+Specifies the operation to perform. Available options:
+- `train` – Train the specified model.
+- `evaluate` – Evaluate the performance of the trained model.
+- `predict` – Make predictions using the trained model.
+
+### --model
+Specifies which machine learning model to use. Available options:
+- `logistic_regression` – Logistic Regression model.
+- `random_forest` – Random Forest model.
+- `lightgbm` – LightGBM model.
+
 ## File Structure
 ```bash
 project-root/
