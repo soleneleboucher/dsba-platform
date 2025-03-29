@@ -1,12 +1,12 @@
 import argparse
 import pandas as pd
 
-from data_loader import load_data
-from model_training import ModelTrainer
-from model_evaluation import evaluate_model
-from model_prediction import load_model, predict
-from model_registry import save_model
-from preprocessing import DataPreprocessor
+from .data_loader import load_data
+from .model_training import ModelTrainer
+from .model_evaluation import evaluate_model
+from .model_prediction import load_model, predict
+from .model_registry import save_model
+from .preprocessing import DataPreprocessor
 
 MODELS = {
     "logistic_regression": "logistic_regression.pkl",
