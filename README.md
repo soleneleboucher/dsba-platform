@@ -1,81 +1,41 @@
-# Ad Click Prediction - CLI Usage Guide
+# Machine Learning CLI Tool
 
-This project trains machine learning models to predict ad click conversion based on user interactions. The CLI provides options for training, evaluating, and predicting using different models.
-
----
+## Overview
+This CLI tool allows users to train, evaluate, and predict using machine learning models on structured data. It supports logistic regression, random forests, and LightGBM models.
 
 ## Installation
-
-Ensure you have all dependencies installed:
-```sh
-pip install -r requirements.txt
+Ensure you have the required dependencies installed:
+```bash
+pip install pandas numpy scikit-learn imbalanced-learn lightgbm optuna joblib
 ```
 
----
+## Usage
+Run the `main.py` script using the command line:
 
-## CLI Commands
-
-### Train a Model
-
-Train a machine learning model on the dataset.
-```sh
-python main.py train --model <model_name> --data <data_file> --output <model_output>
+### 1. Train a Model
+```bash
+python main.py --data path/to/data.csv --task train --model logistic_regression
 ```
 
-#### Example (Train a Logistic Regression Model):
-```sh
-python main.py train --model logistic --data ClickTraining.csv --output logistic.pkl
+### 2. Evaluate a Model
+```bash
+python main.py --data path/to/data.csv --task evaluate --model logistic_regression
 ```
 
-**Arguments:**
-- `--model`: Type of model (`logistic`, `random_forest`, `lgbm`).
-- `--data`: Path to the training dataset.
-- `--output`: File to save the trained model.
-
----
-
-### Evaluate a Model
-
-Evaluate a trained model on a dataset.
-```sh
-python main.py evaluate --model <model_file> --data <data_file>
+### 3. Make Predictions
+```bash
+python main.py --task predict --model logistic_regression --predict_data path/to/new_data.csv
 ```
 
-#### Example:
-```sh
-python main.py evaluate --model logistic.pkl --data ClickTraining.csv
-```
+## File Structure
+- `dataloader.py` – Loads CSV data into Pandas DataFrame.
+- `model_training.py` – Trains different ML models.
+- `model_evaluation.py` – Evaluates trained models.
+- `model_prediction.py` – Loads a model and makes predictions.
+- `model_registry.py` – Saves and loads models.
+- `main.py` – CLI entry point.
 
-**Arguments:**
-- `--model`: Path to the trained model file.
-- `--data`: Path to the dataset for evaluation.
-
----
-
-### Make Predictions
-
-Use a trained model to predict ad clicks on new data.
-```sh
-python main.py predict --model <model_file> --input <input_data> --output <prediction_output>
-```
-
-#### Example:
-```sh
-python main.py predict --model logistic.pkl --input new_data.csv --output predictions.csv
-```
-
-**Arguments:**
-- `--model`: Path to the trained model file.
-- `--input`: Path to new data for predictions.
-- `--output`: File to save predictions.
-
----
-
-## Additional Notes
-
-- The preprocessing step automatically applies **scaling and SMOTE** (if needed).
-- Ensure that the **scaler.pkl** is available when making predictions.
-- The CLI provides options for different models (`logistic`, `random_forest`, `lgbm`).
-
-For more details, refer to the project documentation.
+## Notes
+- Ensure models are trained before running predictions.
+- Models are saved in the `models/` directory.
 

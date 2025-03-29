@@ -33,48 +33,59 @@ class ModelTrainer:
         self.numerical_vars = ['Time_On_Previous_Website',	'Number_of_Previous_Orders', 'Daytime', 'DaytimeXOrders', 'InvTimeonPrevSite'] 
 
 
-    def apply_smote(self, X, y):
+    def apply_smote(self, df, target_col, numerical_vars):
 
-        # Applly SMOTE in case of class imbalance
+        X = df.drop(columns=[target_col])
+        y = df[target_col]
+
+        # Get proportion of each class
         class_counts = y.value_counts(normalize=True)
+
+        # Apply SMOTE if class imbalance exceeds the threshold
         if class_counts.min() < self.smote_threshold:
             smote = SMOTE(sampling_strategy=self.smote_threshold, random_state=42)
             X_resampled, y_resampled = smote.fit_resample(X, y)
-            return X_resampled, y_resampled
-        
-        # If not imbalance, returns X and y as is
-        return X, y
 
-    def train_test_split_and_scale(self, df, target_col, numerical_vars):
+            df_resampled = pd.concat([pd.DataFrame(X_resampled, columns=X_resampled.columns), 
+                                pd.DataFrame(y_resampled, columns=[target_col])], axis=1)
+            return df_resampled
         
+        # If not imbalanced, returns the dataframe as is
+        return df
+
+    def train_test_split(self, df, target_col):
+
         X = df.drop(columns=[target_col])
         y = df[target_col]
-        
+
         # Train-Test Split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=42, stratify=y)
-        
-        # Apply SMOTE if needed
-        X_train, y_train = self.apply_smote(X_train, y_train)
-        
-        # Scale numerical variables
-        X_train[numerical_vars] = self.scaler.fit_transform(X_train[numerical_vars])
-        X_test[numerical_vars] = self.scaler.transform(X_test[numerical_vars])
+
+        # Scale numerical variables #TO DO: Only scale for logistic regression!
+        X_train[self.numerical_vars] = self.scaler.fit_transform(X_train[self.numerical_vars])
+        X_test[self.numerical_vars] = self.scaler.transform(X_test[self.numerical_vars])
         
         joblib.dump(self.scaler, self.scaler_path)  # Save the scaler
-        
-        return X_train, X_test, y_train, y_test
 
+        return X_train, X_test, y_train, y_test
+        
+    # Model 1. Logistic Regression
     def train_logistic_regression(self, X_train, y_train):
         model = LogisticRegression()
         model.fit(X_train, y_train)
+        save_model(model, "logistic_regression.pkl")
         return model
 
+    # Model 2. Random Forest
     def train_random_forest(self, X_train, y_train):
         model = RandomForestClassifier()
         model.fit(X_train, y_train)
         return model
 
     def tune_random_forest(self, X_train, y_train):
+        """
+        Tune the hyperparameters of the RF model
+        """
         param_grid = {
             'n_estimators': [50, 100, 200],
             'max_depth': [5, 10, 20],
@@ -84,7 +95,11 @@ class ModelTrainer:
         grid_search.fit(X_train, y_train)
         return grid_search.best_estimator_
 
+    # Model 3. Light Gradient Boosting
     def tune_lgbm(self, X_train, y_train):
+        """
+        Tune hyperparameters of the Gradient Boosting Model
+        """
         def objective(trial):
             params = {
                 "n_estimators": trial.suggest_int("n_estimators", 50, 500),
@@ -113,9 +128,11 @@ class ModelTrainer:
 
         study = optuna.create_study(direction="maximize")
         study.optimize(objective, n_trials=10)
+        
         return LGBMClassifier(**study.best_params)
 
     def train_lgbm(self, X_train, y_train):
         model = LGBMClassifier()
         model.fit(X_train, y_train)
+        
         return model
