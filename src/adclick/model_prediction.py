@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
 
-MODEL_DIR = "models/"
+MODEL_DIR = "models_registry/"
 
 # Load model from file
 def load_model(filename: str):

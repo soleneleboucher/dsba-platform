@@ -1,7 +1,7 @@
 import joblib
 import os
 
-MODEL_DIR = "models/"
+MODEL_DIR = "models_registry/"
 
 # Save model
 def save_model(model, filename: str):
