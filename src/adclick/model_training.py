@@ -17,7 +17,7 @@ from .model_registry import save_model
 
 
 class ModelTrainer:
-    def __init__(self, test_size=0.2, smote_threshold=0.3, scaler_path="scaler.pkl"):
+    def __init__(self, test_size=0.2, smote_threshold=0.3, scaler_path="scaler.pkl", numerical_vars = None):
         """
         Parameters:
         - test_size: Train-test split ratio (default: 0.2)
@@ -30,7 +30,7 @@ class ModelTrainer:
         self.scaler = MinMaxScaler()
 
         # Numerical variables after feature engineering
-        self.numerical_vars = ['Time_On_Previous_Website',	'Number_of_Previous_Orders', 'Daytime', 'DaytimeXOrders', 'InvTimeonPrevSite'] 
+        self.numerical_vars = numerical_vars if numerical_vars else ['Time_On_Previous_Website',	'Number_of_Previous_Orders', 'Daytime', 'DaytimeXOrders', 'InvTimeonPrevSite'] 
 
 
     def apply_smote(self, df, target_col, numerical_vars):
@@ -71,7 +71,7 @@ class ModelTrainer:
         
     # Model 1. Logistic Regression
     def train_logistic_regression(self, X_train, y_train):
-        model = LogisticRegression()
+        model = LogisticRegression(max_iter = 5000)
         model.fit(X_train, y_train)
         save_model(model, "logistic_regression.pkl")
         return model
@@ -80,6 +80,7 @@ class ModelTrainer:
     def train_random_forest(self, X_train, y_train):
         model = RandomForestClassifier()
         model.fit(X_train, y_train)
+        save_model(model, "random_forest.pkl")
         return model
 
     def tune_random_forest(self, X_train, y_train):
@@ -93,6 +94,7 @@ class ModelTrainer:
         }
         grid_search = GridSearchCV(RandomForestClassifier(), param_grid, cv=5, scoring='f1', n_jobs=-1)
         grid_search.fit(X_train, y_train)
+        save_model(grid_search.best_estimator_, "random_forest_tuned.pkl")
         return grid_search.best_estimator_
 
     # Model 3. Light Gradient Boosting
@@ -129,10 +131,14 @@ class ModelTrainer:
         study = optuna.create_study(direction="maximize")
         study.optimize(objective, n_trials=10)
         
-        return LGBMClassifier(**study.best_params)
+        best_model = LGBMClassifier(**study.best_params)
+        best_model.fit(X_train, y_train)
+        save_model(best_model, "lgbm_tuned.pkl")
+        return best_model
 
     def train_lgbm(self, X_train, y_train):
         model = LGBMClassifier()
         model.fit(X_train, y_train)
+        save_model(model, "lgbm.pkl")
         
         return model

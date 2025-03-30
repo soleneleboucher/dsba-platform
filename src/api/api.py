@@ -43,3 +43,9 @@ async def predict(query: str, model_id: str):
         # (In the HTTP protocol, a 500 status code just means "Internal Server Error" aka "Something went wrong but we're not going to tell you what")
         # So we raise an HTTPException that contains the same details as the original Exception and FastAPI will send to the client.
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+# Added  
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the model API!"}

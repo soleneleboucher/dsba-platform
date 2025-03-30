@@ -12,6 +12,7 @@ from pathlib import Path
 from dsba.data_ingestion import load_csv_from_path, write_csv_to_path
 from dsba.model_registry import list_models_ids, load_model, load_model_metadata
 from dsba.model_prediction import classify_dataframe
+from dsba.preprocessing import preprocess_dataframe
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,6 +40,11 @@ def create_parser():
     predict_parser.add_argument("--model", help="Model name to use", required=True)
     predict_parser.add_argument("--input", help="Input file path", required=True)
     predict_parser.add_argument("--output", help="Output file path", required=True)
+
+    # Preprocessing command
+    preprocess_parser = subparsers.add_parser("preprocess data", help = "Encode categorical data")
+    preprocess_parser.add_argument("--dataset", help = "Dataset to preprocess", required = True)
+    preprocess_parser.add_argument("--output", help = "Output file path", required = True)
 
     return parser
 
@@ -73,6 +79,11 @@ def predict(model_id: str, input_file: str, output_file: str) -> None:
     predictions = classify_dataframe(model, df, metadata.target_column)
     write_csv_to_path(predictions, output_file)
     print(f"Scored {len(predictions)} records")
+
+def preprocess(df: str, output_file: str) -> None:
+    df_encoded = preprocess_dataframe(df)
+    write_csv_to_path(df_encoded, output_file)
+    print(f"The preprocessed file has been saved to r{output_file}")
 
 
 if __name__ == "__main__":
