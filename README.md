@@ -4,10 +4,29 @@
 This CLI tool allows users to train, evaluate, and predict using machine learning models on structured data. It supports logistic regression, random forests, and LightGBM models.
 
 ## Installation
+
+### Without Docker
 Ensure you have the required dependencies installed:
 ```bash
-pip install pandas numpy scikit-learn imbalanced-learn lightgbm optuna joblib
+pip install -r requirement.txt
 ```
+
+### With Docker
+
+Alternatively, you can run the tool using Docker. This will automatically set up the environment and dependencies for you.
+
+#### 1. Build the Docker Image: First, build the Docker image:
+
+```bash
+docker build -t ml-cli-tool .
+```
+
+#### 2. Run the Docker Container: Start the container and expose port 8000:
+
+```bash
+docker run -p 8000:8000 ml-cli-tool
+```
+This will start the FastAPI server that you can interact with via your browser or API requests.
 
 ## Usage
 Run the `main.py` script using the command line:

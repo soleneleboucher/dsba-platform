@@ -17,7 +17,7 @@ from .model_registry import save_model
 
 
 class ModelTrainer:
-    def __init__(self, test_size=0.2, smote_threshold=0.3, scaler_path="scaler.pkl", numerical_vars = None):
+    def __init__(self, test_size=0.2, smote_threshold=0.3, scaler_path="models_registry/scaler.pkl", numerical_vars = None):
         """
         Parameters:
         - test_size: Train-test split ratio (default: 0.2)

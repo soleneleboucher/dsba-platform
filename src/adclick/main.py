@@ -8,11 +8,16 @@ from .model_prediction import load_model, predict
 from .model_registry import save_model
 from .preprocessing import DataPreprocessor
 
+from fastapi import FastAPI
+
 MODELS = {
     "logistic_regression": "logistic_regression.pkl",
     "random_forest": "random_forest.pkl",
     "lgbm": "lgbm.pkl"
 }
+
+app = FastAPI()
+@app.get("/")
 
 def main():
     parser = argparse.ArgumentParser(description="CLI tool for ML model training and evaluation")
