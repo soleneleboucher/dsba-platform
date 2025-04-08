@@ -1,51 +1,114 @@
-import json
-import logging
 from fastapi import FastAPI, HTTPException
-from dsba.model_registry import list_models_ids, load_model, load_model_metadata
-from dsba.model_prediction import classify_record
+import joblib
+import json
+import pandas as pd
+from adclick.model_prediction import load_model, predict
+from adclick.model_registry import save_model
+from adclick.model_training import ModelTrainer
+from adclick.preprocessing import DataPreprocessor
+from adclick.model_evaluation import evaluate_model
 
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S,",
-)
 
 app = FastAPI()
 
-
-# using FastAPI with defaults is very convenient
-# we just add this "decorator" with the "route" we want.
-# If I deploy this app on "https//mywebsite.com", this function can be called by visiting "https//mywebsite.com/models/"
-@app.get("/models/")
-async def list_models():
-    return list_models_ids()
+# Load the models
+MODEL_DIR = "models_registry/"
+scaler_path = MODEL_DIR + "scaler.pkl"
 
 
-@app.api_route("/predict/", methods=["GET", "POST"])
-async def predict(query: str, model_id: str):
+@app.api_route("/train/", methods = ["GET", "POST"])
+async def train_model(query: str, target_column: str = 'Clicks_Conversion', model_type: str = "tune_lgbm"):
+    """
+    Train the lgbm model.
+    The query should be a json string representing a record.
+    """
+    try:
+        record = json.loads(query)
+
+        record_df = pd.DataFrame([record])
+
+        # Preprocess data 
+        preprocessor = DataPreprocessor()
+        df = preprocessor.preprocess(record_df)
+
+        # Use SMOTE
+        trainer = ModelTrainer(scaler_path=scaler_path)
+        df_resampled = trainer.apply_smote(df, target_col=target_column, numerical_vars=trainer.numerical_vars)
+
+        X_train, X_test, y_train, y_test = trainer.train_test_split(df_resampled, target_col=target_column)
+
+        # Train the right model
+        if model_type == "lgbm":
+            model = trainer.train_lgbm(X_train, y_train)
+        if model_type == "tune_lgbm":
+            model = trainer.tune_lgbm(X_train, y_train)
+        elif model_type == "random_forest":
+            model = trainer.train_random_forest(X_train, y_train) 
+        elif model_type == "logistic_regression":
+            model = trainer.train_logistic_regression(X_train, y_train) 
+        else:
+            raise HTTPException(status_code=400, detail="Unknown model.")
+
+        # Save the model
+        model_name = f"{model_type}_model.pkl"
+        model_path = MODEL_DIR + model_name
+        save_model(model, model_path)
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.api_route("/predict_lgbm/", methods = ["GET", "POST"])
+async def predict(query: str, columns: str, model_name: str = "lgbm_tuned.pkl"):
     """
     Predict the target column of a record using a model.
     The query should be a json string representing a record.
     """
-    # This function is a bit naive and focuses on the logic.
-    # To make it more production-ready you would want to validate the input, manage authentication,
-    # process the various possible errors and raise an appropriate HTTP exception, etc.
-    try:
+    try: 
         record = json.loads(query)
-        model = load_model(model_id)
-        metadata = load_model_metadata(model_id)
-        prediction = classify_record(model, record, metadata.target_column)
-        return {"prediction": prediction}
-    except Exception as e:
-        # We do want users to be able to see the exception message in the response
-        # FastAPI will by default block the Exception and send a 500 status code
-        # (In the HTTP protocol, a 500 status code just means "Internal Server Error" aka "Something went wrong but we're not going to tell you what")
-        # So we raise an HTTPException that contains the same details as the original Exception and FastAPI will send to the client.
+
+        columns_list = columns.split(",")
+        record_df = pd.DataFrame([record], columns = columns_list)
+
+        preprocessor = DataPreprocessor()
+        preprocessed_data = preprocessor.preprocess(record_df)
+
+        model_path = MODEL_DIR + model_name
+        model = load_model(model_path)
+
+        predictions = predict(model, preprocessed_data)
+
+        return {"prediction": predictions}
+        
+    except Exception as e: 
         raise HTTPException(status_code=500, detail=str(e))
     
 
-# Added  
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the model API!"}
+@app.post("/evaluate/")
+async def evaluate_model(query: str, target_column: str, model_name: str = "lgbm_tuned.pkl"):
+    """
+    Evaluate the model.
+    """
+    try: 
+        record = json.loads(query)
+
+        record_df = pd.DataFrame([record])
+
+        preprocessor = DataPreprocessor()
+        df = preprocessor.preprocess(record_df)
+
+        trainer = ModelTrainer(scaler_path=scaler_path)
+        df_resampled = trainer.apply_smote(df, target_col=target_column, numerical_vars=trainer.numerical_vars)
+
+        X_train, X_test, y_train, y_test = trainer.train_test_split(df_resampled, target_col=target_column)
+
+
+        model_path = MODEL_DIR + model_name
+        model = load_model(model_path)
+
+        metrics = evaluate_model(model, X_test, y_test)
+    
+        return {"metrics": metrics}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
