@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import re
 import joblib
+import os
 
 from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
 from sklearn.preprocessing import MinMaxScaler
@@ -65,7 +66,9 @@ class ModelTrainer:
         X_train[self.numerical_vars] = self.scaler.fit_transform(X_train[self.numerical_vars])
         X_test[self.numerical_vars] = self.scaler.transform(X_test[self.numerical_vars])
         
-        joblib.dump(self.scaler, self.scaler_path)  # Save the scaler
+        # Save the scaler
+        os.makedirs(os.path.dirname(self.scaler_path), exist_ok=True)
+        joblib.dump(self.scaler, self.scaler_path)  
 
         return X_train, X_test, y_train, y_test
         
