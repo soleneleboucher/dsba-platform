@@ -15,18 +15,37 @@ pip install -r requirement.txt
 
 Alternatively, you can run the tool using Docker. This will automatically set up the environment and dependencies for you.
 
-#### 1. Build the Docker Image: First, build the Docker image:
+### Deploy Docker directly on your machine 
+
+##### 1. Build the Docker Image: First, build the Docker image:
 
 ```bash
 docker build -t ml-cli-tool .
 ```
 
-#### 2. Run the Docker Container: Start the container and expose port 8000:
+##### 2. Run the Docker Container: Start the container and expose port 8000:
 
 ```bash
 docker run -p 8000:8000 ml-cli-tool
 ```
 This will start the FastAPI server that you can interact with via your browser or API requests.
+
+### Deploy the Docker image on Docker Hub 
+
+In addition to running Docker locally, you can push your image to Docker Hub, which allows to share and deploy the application. 
+
+For that, the docker_push.sh file contains all the necessary commands. 
+
+You need to execute: 
+
+```bash
+chmod +x docker_push.sh
+```
+
+And then: 
+```bash
+./docker_push.sh
+```
 
 ## Usage
 Run the `main.py` script using the command line:
@@ -45,6 +64,7 @@ python -m src.adclick.main --data path/to/data.csv --task evaluate --model logis
 ```bash
 python -m src.adclick.main --task predict --model logistic_regression --predict_data path/to/new_data.csv
 ```
+
 
 ## Options
 
