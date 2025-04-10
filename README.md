@@ -38,11 +38,14 @@ For that, the docker_push.sh file contains all the necessary commands.
 
 You need to execute: 
 
+- to grant the rights to execute: 
+
 ```bash
 chmod +x docker_push.sh
 ```
 
-And then: 
+- to execute the script:
+
 ```bash
 ./docker_push.sh
 ```
