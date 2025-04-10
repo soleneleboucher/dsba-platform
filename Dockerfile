@@ -21,15 +21,17 @@ RUN dpkg -s libgomp1
 # Install Python dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install .
+
 # Expose the port on which FastAPI will run
 EXPOSE 8000
 
 # Set environment variables
-#ENV DSBA_MODELS_ROOT_PATH=/app/src/adclick/models_registry
 ENV PYTHONPATH=/app/src
-ENV DSBA_MODELS_ROOT_PATH=/app/src/adclick/model_registry
+ENV DSBA_MODELS_ROOT_PATH=/app/src/adclick/models_registry
 
 # Define the default command run when starting the container: Run the FastAPI app using Uvicorn
-#CMD ["python", "-m","uvicorn", "src.api.api:app", "--host", "0.0.0.0", "--port", "8000"]
-CMD ["python", "-m", "uvicorn", "adclick.main:app", "--host", "0.0.0.0", "--port", "8000"]
+#CMD ["python", "-m", "uvicorn", "adclick.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m","uvicorn", "src.api.api:app", "--host", "0.0.0.0", "--port", "8000"]
+
 
