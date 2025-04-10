@@ -96,8 +96,10 @@ project-root/
 │       ├── model_evaluation.py
 │       ├── model_prediction.py
 │       ├── model_registry.py
+│       ├── models_registry/ # where trained models are saved 
 │
-├── models_registry/        # Where trained models are saved
+├── docker_push.sh
+├── pyproject.toml
 ├── requirements.txt
 └── README.md
 ```
