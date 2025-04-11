@@ -10,6 +10,8 @@
 - [File Structure](#File-Structure)
 - [Notes](#Notes)
 
+Download the project specifications in .docx format [here](./MLMOps%Project%Specifications.docx)
+
 ## Overview
 This ad-click prediction tool, written in Python, allows companies to predict if customers will engage with a specific type of advertisement shown to them based on the customer’s demographic and online behavior. It can be used by e-commerce platforms to fine-tune their marketing campaigns and advertising strategies. The tool allows the user to select from three types of prediction models, train the model on historical data and use the trained model(s) to predict customer behavior for planned advertisements.
 
