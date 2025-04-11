@@ -1,7 +1,35 @@
-# Machine Learning CLI Tool
+# Ad Click Prediction Tool
+
+## Table of Contents
+
+- [Overview](#Overview)
+- [Data Requirements](#Data-Requirements)
+- [Installation](#Installation)
+- [Usage](#Usage)
+- [Options](#Options)
+- [File Structure](#File-Structure)
+- [Notes](#Notes)
 
 ## Overview
-This CLI tool allows users to train, evaluate, and predict using machine learning models on structured data. It supports logistic regression, random forests, and LightGBM models.
+This ad-click prediction tool, written in Python, allows companies to predict if customers will engage with a specific type of advertisement shown to them based on the customer’s demographic and online behavior. It can be used by e-commerce platforms to fine-tune their marketing campaigns and advertising strategies. The tool allows the user to select from three types of prediction models, train the model on historical data and use the trained model(s) to predict customer behavior for planned advertisements.
+
+The models trained are saved within [models_registry](./src/adclick/models_registry/)
+
+## Data-Requirements
+
+The data for training and prediction is to be supplied in a standard .csv format with the following structure:
+
+| Column Name         | Type     | Description                                                       |
+|---------------------|----------|-------------------------------------------------------------------|
+| `customer_region`   | string   | Geographic region of the customer                                 |
+| `time_of_day`       | float    | Time of day (e.g., 13.5 for 1:30 PM)                              |
+| `day_of_week`       | string   | Day name (e.g., "Monday")                                         |
+| `device_type`       | string   | Device used by the customer (e.g., "mobile", "desktop")           |
+| `avg_time_spent`    | float    | Average time spent on the previous platform (in minutes)          |
+| `previous_purchases`| integer  | Number of past purchases by the customer                          |
+| `ad_channel`        | string   | Platform where the ad was shown (e.g., "Instagram", "in-app")     |
+
+However, the models can work on any datasets as long as the table schema remains the same. In case new columns are being utilized, you may tailor the feature engineering and data preprocessing sections within [preprocessing.py](./src/adclick/preprocessing.py.py)
 
 ## Installation
 
